@@ -1,0 +1,47 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Uptick</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <canvas id="scene"></canvas>
+
+  <header class="hud">
+    <div class="hud-inner">
+      <span id="hudRound">UPTICK</span>
+      <span id="hudFloor">FLOOR 0/60</span>
+    </div>
+  </header>
+
+  <div id="timer" hidden>
+    <span id="timerBonus">FAST +10</span>
+    <div class="track"><div id="timerBar"></div></div>
+    <span id="timerNum">15</span>
+  </div>
+
+  <div id="overlay"></div>
+
+  <main id="qwrap" hidden>
+    <div id="qcard">
+      <div id="qMeta"></div>
+      <div id="askView">
+        <div id="qText"></div>
+        <div id="answer"></div>
+        <div id="tryMsg"></div>
+      </div>
+      <div id="resultView" hidden>
+        <div id="timeline" hidden></div>
+        <div id="feedback"></div>
+        <button id="nextBtn" class="big" hidden>Next &rsaquo;</button>
+      </div>
+    </div>
+  </main>
+
+  <div id="hint">M = mute &middot; F = fullscreen &middot; Enter = confirm / next</div>
+
+  <script type="module" src="js/main.js"></script>
+</body>
+</html>

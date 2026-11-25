@@ -1,0 +1,96 @@
+[
+  {
+    "id": "q1",
+    "type": "mcq",
+    "level": 1,
+    "q": "What does inflation measure?",
+    "options": [
+      "The size of a country's debt",
+      "The value of a currency against gold",
+      "The number of people without a job",
+      "The general rise in prices over time"
+    ],
+    "answer": "The general rise in prices over time",
+    "fact": "Central banks in advanced economies typically target about 2% annual inflation."
+  },
+  {
+    "id": "q2",
+    "type": "date",
+    "level": 2,
+    "q": "In what year was the Bretton Woods monetary agreement established?",
+    "range": [1900, 2000],
+    "ticks": [
+      { "v": 1920, "l": "1920" },
+      { "v": 1945, "l": "1945" },
+      { "v": 1971, "l": "1971" }
+    ],
+    "answer": 1944,
+    "precise": true,
+    "tol": 15,
+    "fact": "Delegates from 44 nations met in July 1944, creating the IMF and World Bank framework."
+  },
+  {
+    "id": "q3",
+    "type": "mcq",
+    "level": 3,
+    "q": "What does a yield curve inversion typically signal about bond markets?",
+    "options": [
+      "Short-term yields are higher than long-term yields",
+      "Long-term yields are higher than short-term yields",
+      "Bond prices have zero interest-rate sensitivity",
+      "Central bank rates are permanently fixed"
+    ],
+    "answer": "Short-term yields are higher than long-term yields",
+    "fact": "Inverted curves often reflect expectations of slower growth or rate cuts ahead."
+  },
+  {
+    "id": "q4",
+    "type": "number",
+    "level": 4,
+    "q": "Approximately how many days are in a standard calendar year?",
+    "range": [10, 10000],
+    "answer": 365,
+    "precise": true,
+    "tolFactor": 1.5,
+    "fact": "Leap years add one extra day every four years (with century exceptions)."
+  },
+  {
+    "id": "q5",
+    "type": "name",
+    "level": 5,
+    "q": "Which New York street is historically synonymous with American financial markets?",
+    "accepted": ["Wall Street", "Wall St"],
+    "display": "Wall Street",
+    "fact": "Named after a 17th-century palisade wall at the southern tip of Manhattan."
+  },
+  {
+    "id": "q6",
+    "type": "mcq",
+    "level": 6,
+    "q": "What is EBITDA primarily used to approximate?",
+    "options": [
+      "Cash flow before interest, taxes, depreciation, and amortization",
+      "Net income after extraordinary write-downs",
+      "Total shareholder equity on the balance sheet",
+      "Quarterly dividend payout coverage"
+    ],
+    "answer": "Cash flow before interest, taxes, depreciation, and amortization",
+    "fact": "EBITDA strips out capital structure and non-cash accounting charges for operating comparisons."
+  },
+  {
+    "id": "q7",
+    "type": "date",
+    "level": 7,
+    "q": "In what year did Lehman Brothers file for Chapter 11 bankruptcy?",
+    "range": [1950, 2025],
+    "ticks": [
+      { "v": 1975, "l": "1975" },
+      { "v": 2000, "l": "2000" },
+      { "v": 2015, "l": "2015" }
+    ],
+    "answer": 2008,
+    "precise": true,
+    "tol": 10,
+    "fact": "Filed on September 15, 2008, marking a pivotal shock in the global financial crisis."
+  }
+]
