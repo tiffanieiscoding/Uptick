@@ -698,9 +698,12 @@ export class Scene {
     const cx = x + 5;
     const skin = this.skinColor();
     const hair = '#1e1b18';
+    const suit = '#111827';
+    const suitShadow = '#090d16';
     const shirt = '#f8fafc';
-    const pants = '#334155';
+    const briefcase = '#090d16';
 
+    // Cheveux longs (à l'arrière)
     if (this.look.hair === 1) {
       c.fillStyle = hair;
       c.beginPath();
@@ -708,29 +711,66 @@ export class Scene {
       c.fill();
     }
 
-    c.fillStyle = pants;
+    // Pantalon de costume noir
+    c.fillStyle = suit;
     c.beginPath();
-    c.roundRect(cx - 2.6, y + 10, 2.1, 4.5, 1);
-    c.roundRect(cx + 0.5, y + 10, 2.1, 4.5, 1);
+    c.roundRect(cx - 2.6, y + 10, 2.1, 4.5, 0.8);
+    c.roundRect(cx + 0.5, y + 10, 2.1, 4.5, 0.8);
     c.fill();
 
-    c.fillStyle = '#0f172a';
+    // Chaussures de ville noires
+    c.fillStyle = suitShadow;
     c.beginPath();
-    c.roundRect(cx - 3, y + 13.5, 2.6, 1.8, 0.9);
-    c.roundRect(cx + 0.4, y + 13.5, 2.6, 1.8, 0.9);
+    c.roundRect(cx - 3.1, y + 13.6, 2.7, 1.7, 0.7);
+    c.roundRect(cx + 0.4, y + 13.6, 2.7, 1.7, 0.7);
+    c.fill();
+
+    // Veste de costume noire + chemise blanche au centre
+    c.fillStyle = suit;
+    c.beginPath();
+    c.roundRect(cx - 3.7, y + 6.2, 7.4, 4.6, 1.6);
     c.fill();
 
     c.fillStyle = shirt;
     c.beginPath();
-    c.roundRect(cx - 3.4, y + 6.2, 6.8, 4.6, 2);
+    c.moveTo(cx - 1.1, y + 6.4);
+    c.lineTo(cx + 1.1, y + 6.4);
+    c.lineTo(cx, y + 9.2);
+    c.closePath();
+    c.fill();
+
+    // Bras gauche & bras droit tenant la mallette
+    c.fillStyle = suit;
+    c.beginPath();
+    c.roundRect(cx - 4.8, y + 6.6, 1.5, 3.6, 0.7);
+    c.roundRect(cx + 3.3, y + 6.6, 1.5, 3.6, 0.7);
     c.fill();
 
     c.fillStyle = skin;
     c.beginPath();
-    c.roundRect(cx - 4.6, y + 6.6, 1.5, 3.8, 0.75);
-    c.roundRect(cx + 3.1, y + 6.6, 1.5, 3.8, 0.75);
+    c.arc(cx - 4.05, y + 10.4, 0.95, 0, Math.PI * 2);
+    c.arc(cx + 4.05, y + 10.4, 0.95, 0, Math.PI * 2);
     c.fill();
 
+    // Mallette noire vue de tranche (étroite en largeur, haute comme une mallette de profil)
+    const bx = cx + 3.2;
+    const by = y + 11.1;
+    c.strokeStyle = '#334155';
+    c.lineWidth = 0.85;
+    c.beginPath();
+    c.moveTo(bx + 0.85, by);
+    c.lineTo(bx + 0.85, by - 1.1);
+    c.stroke();
+
+    c.fillStyle = briefcase;
+    c.beginPath();
+    c.roundRect(bx, by, 1.7, 4.3, 0.55);
+    c.fill();
+
+    c.fillStyle = 'rgba(148, 163, 184, 0.25)';
+    c.fillRect(bx + 0.35, by + 0.6, 0.35, 3.1);
+
+    // Tête + cheveux + yeux
     c.fillStyle = skin;
     c.beginPath();
     c.arc(cx, y + 3.6, 3.1, 0, Math.PI * 2);
@@ -752,9 +792,19 @@ export class Scene {
     const cx = this.tx + TW / 2 - 10;
     const climbLift = smooth(0, 0.14, this.alt) * (this.groundY - Math.round(this.H * 0.52));
     const onRoof = this.roofArrived && this.alt >= 0.995;
-    const cy = onRoof ? this.sy(TOP) - 34 : this.groundY - 32 - climbLift;
     const heliTakesHer = this.heli && this.heli.t > 0.4;
 
+    if (onRoof) {
+      const roofY = this.sy(TOP) - 5;
+      c.fillStyle = 'rgba(203, 213, 225, 0.45)';
+      c.fillRect(cx + 10, 0, 1, Math.max(0, roofY - 32));
+      if (!heliTakesHer) {
+        this.drawCharacter(c, cx + 5, roofY - 15);
+      }
+      return;
+    }
+
+    const cy = this.groundY - 32 - climbLift;
     c.fillStyle = 'rgba(203, 213, 225, 0.55)';
     c.fillRect(cx + 10, 0, 1, cy);
 

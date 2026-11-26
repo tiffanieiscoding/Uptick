@@ -48,9 +48,12 @@ export class Game {
     this.scene = new Scene(this.canvas);
     this.state = 'title';
     this.look = this.loadLook();
+    this.account = this.loadAccount();
+    this.drawerOpen = false;
     this.lastPopSpot = -1;
     this.scene.setLook(this.look);
     this.fit();
+    this.bindDrawer();
 
     window.addEventListener('resize', () => this.fit());
     window.addEventListener('keydown', (e) => this.onKey(e));
@@ -80,6 +83,137 @@ export class Game {
     }
   }
 
+  loadAccount() {
+    try {
+      const raw = localStorage.getItem('uptick-account');
+      const v = raw ? JSON.parse(raw) : null;
+      if (v && typeof v === 'object') {
+        return {
+          name: typeof v.name === 'string' && v.name.trim() ? v.name.trim() : 'Trader',
+          bestFloor: Number(v.bestFloor) || 0,
+          gamesPlayed: Number(v.gamesPlayed) || 0,
+          streak: Number(v.streak) || 0,
+        };
+      }
+    } catch (e) {
+      // ignore storage errors
+    }
+    return { name: 'Trader', bestFloor: 0, gamesPlayed: 0, streak: 0 };
+  }
+
+  saveAccount() {
+    try {
+      localStorage.setItem('uptick-account', JSON.stringify(this.account));
+    } catch (e) {
+      // ignore storage errors
+    }
+  }
+
+  bindDrawer() {
+    const btn = $('drawerToggle');
+    const panel = $('drawerPanel');
+    const drawer = $('drawer');
+    if (!btn || !panel || !drawer) return;
+
+    btn.addEventListener('click', () => {
+      this.drawerOpen = !this.drawerOpen;
+      drawer.classList.toggle('open', this.drawerOpen);
+      btn.setAttribute('aria-expanded', String(this.drawerOpen));
+      panel.hidden = !this.drawerOpen;
+      if (this.drawerOpen) {
+        this.renderDrawerContent();
+      }
+      audio.init();
+      audio.sfx.click();
+    });
+  }
+
+  renderDrawerContent() {
+    const panel = $('drawerPanel');
+    if (!panel) return;
+    panel.innerHTML = `
+      <div class="drawer-section">
+        <div class="drawer-title">Account</div>
+        <div class="acc-row">
+          <input id="accNameInput" class="acc-input" type="text" maxlength="20" value="${this.escapeHtml(this.account.name)}" placeholder="Your handle">
+          <button id="accSaveBtn" class="acc-save" type="button">Save</button>
+        </div>
+        <div class="acc-stats">
+          <div>Best floor<strong>${this.account.bestFloor}/${FLOORS}</strong></div>
+          <div>Runs<strong>${this.account.gamesPlayed}</strong></div>
+        </div>
+      </div>
+      <div class="drawer-section">
+        <div class="drawer-title">Character</div>
+        <div class="row"><span class="lbl">Skin</span><span id="drawerSkins"></span></div>
+        <div class="row"><span class="lbl">Hair</span>
+          <button type="button" data-hair="0">Short</button>
+          <button type="button" data-hair="1">Long</button>
+        </div>
+      </div>`;
+
+    const skinsBox = panel.querySelector('#drawerSkins');
+    SKINS.forEach((c, i) => {
+      const b = document.createElement('button');
+      b.type = 'button';
+      b.className = 'sw' + (i === this.look.skin ? ' on' : '');
+      b.style.background = c;
+      b.setAttribute('aria-label', 'Skin tone ' + (i + 1));
+      b.addEventListener('click', () => {
+        this.look.skin = i;
+        this.refreshLook();
+        audio.init();
+        audio.sfx.click();
+      });
+      skinsBox.appendChild(b);
+    });
+
+    panel.querySelectorAll('[data-hair]').forEach((b) => {
+      b.addEventListener('click', () => {
+        this.look.hair = Number(b.dataset.hair);
+        this.refreshLook();
+        audio.init();
+        audio.sfx.click();
+      });
+    });
+
+    const input = panel.querySelector('#accNameInput');
+    const saveBtn = panel.querySelector('#accSaveBtn');
+    const applyName = () => {
+      const next = (input.value || '').trim();
+      this.account.name = next || 'Trader';
+      input.value = this.account.name;
+      this.saveAccount();
+      this.refreshHomeAccountLine();
+      audio.init();
+      audio.sfx.click();
+    };
+    saveBtn.addEventListener('click', applyName);
+    input.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        applyName();
+      }
+    });
+
+    this.refreshLook();
+  }
+
+  escapeHtml(str) {
+    return String(str)
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;');
+  }
+
+  refreshHomeAccountLine() {
+    const el = $('homeAccountName');
+    if (el) el.textContent = this.account.name;
+    const bestEl = $('homeBestFloor');
+    if (bestEl) bestEl.textContent = `${this.account.bestFloor}/${FLOORS}`;
+  }
+
   fit() {
     const S = Math.max(1, Math.round(window.innerHeight / 270));
     const w = Math.ceil(window.innerWidth / S);
@@ -101,11 +235,27 @@ export class Game {
     }
   }
 
+  setDrawerVisible(visible) {
+    const drawer = $('drawer');
+    const panel = $('drawerPanel');
+    const btn = $('drawerToggle');
+    if (!drawer) return;
+
+    drawer.hidden = !visible;
+    if (!visible) {
+      this.drawerOpen = false;
+      drawer.classList.remove('open');
+      if (panel) panel.hidden = true;
+      if (btn) btn.setAttribute('aria-expanded', 'false');
+    }
+  }
+
   loop(now) {
     const dt = Math.min(0.05, (now - this.last) / 1000);
     this.last = now;
     this.scene.update(dt);
     this.scene.draw();
+    audio.setAltitudeAmbience(this.scene.alt);
     if (this.state === 'asking') this.tickTimer();
     $('hudFloor').textContent = `FLOOR ${Math.round(this.scene.alt * FLOORS)}/${FLOORS}`;
     requestAnimationFrame((t) => this.loop(t));
@@ -113,6 +263,7 @@ export class Game {
 
   showTitle() {
     this.state = 'title';
+    this.setDrawerVisible(true);
     this.scene.reset();
     this.scene.setRoofArrived(false);
     $('qwrap').hidden = true;
@@ -121,56 +272,37 @@ export class Game {
 
     const ov = $('overlay');
     ov.innerHTML = `
-      <div class="card">
-        <h1 class="logo">UPTICK</h1>
-        <p class="tag">Answer well. Climb higher. Reach the rooftop at night.</p>
-        <div class="row"><span class="lbl">Skin</span><span id="skins"></span></div>
-        <div class="row"><span class="lbl">Hair</span>
-          <button data-hair="0">Short</button><button data-hair="1">Long</button></div>
-        <button class="big" id="startBtn">PRESS ENTER</button>
+      <div class="card plain-home">
+        <div class="plain-kicker">UPTICK · FINANCE &amp; ECON</div>
+        <h1 class="logo">Play today.</h1>
+        <p class="plain-sub">Answer sharp, climb higher through the tower, and reach the rooftop at night.</p>
+        <div class="plain-meta">
+          <span>Account: <strong id="homeAccountName">${this.escapeHtml(this.account.name)}</strong></span>
+          <span>Best: <strong id="homeBestFloor">${this.account.bestFloor}/${FLOORS}</strong></span>
+        </div>
+        <button class="plain-cta" id="startBtn" type="button">
+          <span>Play today</span>
+          <span class="cta-sub">7 rounds &middot; Enter</span>
+        </button>
       </div>`;
 
-    const skins = ov.querySelector('#skins');
-    SKINS.forEach((c, i) => {
-      const b = document.createElement('button');
-      b.className = 'sw' + (i === this.look.skin ? ' on' : '');
-      b.style.background = c;
-      b.setAttribute('aria-label', 'Skin tone ' + (i + 1));
-      b.addEventListener('click', () => {
-        this.look.skin = i;
-        this.refreshLook();
-        audio.init();
-        audio.sfx.click();
-      });
-      skins.appendChild(b);
-    });
-
-    ov.querySelectorAll('[data-hair]').forEach((b) => {
-      b.addEventListener('click', () => {
-        this.look.hair = Number(b.dataset.hair);
-        this.refreshLook();
-        audio.init();
-        audio.sfx.click();
-      });
-    });
-
     ov.querySelector('#startBtn').addEventListener('click', () => this.start());
-    this.refreshLook();
   }
 
   refreshLook() {
     this.scene.setLook(this.look);
     this.saveLook();
-    document.querySelectorAll('#overlay .sw').forEach((b, i) => {
+    document.querySelectorAll('#drawerPanel .sw').forEach((b, i) => {
       b.classList.toggle('on', i === this.look.skin);
     });
-    document.querySelectorAll('#overlay [data-hair]').forEach((b) => {
+    document.querySelectorAll('#drawerPanel [data-hair]').forEach((b) => {
       b.classList.toggle('on', Number(b.dataset.hair) === this.look.hair);
     });
   }
 
   start() {
     audio.init();
+    this.setDrawerVisible(false);
     this.scores = [];
     this.bonuses = [];
     this.used = new Set();
@@ -395,13 +527,14 @@ export class Game {
     pop.className = `score-pop ${styleMode}`;
     pop.textContent = `+${points}`;
 
+    // Plus proches du gratte-ciel central (flancs gauche / droit resserrés)
     const spots = [
-      { x: 11, y: 26, rot: -7 },
-      { x: 89, y: 26, rot: 7 },
-      { x: 10, y: 42, rot: -5 },
-      { x: 90, y: 42, rot: 5 },
-      { x: 13, y: 56, rot: -6 },
-      { x: 87, y: 56, rot: 6 },
+      { x: 28, y: 28, rot: -7 },
+      { x: 72, y: 28, rot: 7 },
+      { x: 26, y: 42, rot: -5 },
+      { x: 74, y: 42, rot: 5 },
+      { x: 30, y: 54, rot: -6 },
+      { x: 70, y: 54, rot: 6 },
     ];
 
     let idx = Math.floor(Math.random() * spots.length);
@@ -411,8 +544,8 @@ export class Game {
     const spot = spots[idx];
     const jx = (Math.random() - 0.5) * 3;
     const jy = (Math.random() - 0.5) * 4;
-    pop.style.left = `${Math.max(6, Math.min(94, spot.x + jx))}%`;
-    pop.style.top = `${Math.max(18, Math.min(65, spot.y + jy))}%`;
+    pop.style.left = `${Math.max(22, Math.min(78, spot.x + jx))}%`;
+    pop.style.top = `${Math.max(18, Math.min(62, spot.y + jy))}%`;
     pop.style.setProperty('--rot', `${spot.rot}deg`);
 
     if (styleMode === 'funk') {
@@ -422,6 +555,15 @@ export class Game {
 
     document.body.appendChild(pop);
     pop.addEventListener('animationend', () => pop.remove(), { once: true });
+  }
+
+  computeAltitude(isFinal = false) {
+    const rawAlt = this.total() / (ROUNDS * ROOFTOP_AVG);
+    if (isFinal) {
+      return Math.max(0, Math.min(1, rawAlt));
+    }
+    const maxBeforeFinal = ((this.round + 1) / ROUNDS) * 0.84;
+    return Math.max(0, Math.min(maxBeforeFinal, rawAlt * 0.84));
   }
 
   reveal(score, msg) {
@@ -485,10 +627,12 @@ export class Game {
     $('qwrap').classList.add('dock');
 
     const isLastRound = this.round + 1 >= ROUNDS;
+    const nextAlt = Math.min(1, this.total() / (ROUNDS * ROOFTOP_AVG));
     const isPerfectSoFar = isLastRound && this.scores.every((s) => s >= PERFECT);
-    this.scene.setTarget(this.total() / (ROUNDS * ROOFTOP_AVG));
-    if (isPerfectSoFar) this.scene.setRoofArrived(true);
-    this.round++;
+    this.scene.setTarget(nextAlt);
+    if (isPerfectSoFar || nextAlt >= 0.995) {
+      this.scene.setRoofArrived(true);
+    }
 
     const nb = $('nextBtn');
     nb.textContent = this.round >= ROUNDS ? 'See the view ›' : 'Next ›';
@@ -508,8 +652,16 @@ export class Game {
     $('timer').hidden = true;
     $('qwrap').hidden = true;
     const sum = this.total();
-    const alt = Math.min(1, sum / (ROUNDS * ROOFTOP_AVG));
+    const alt = this.computeAltitude(true);
     const perfect = this.scores.every((s) => s >= PERFECT);
+    const floorReached = Math.round(alt * FLOORS);
+
+    this.account.gamesPlayed += 1;
+    if (floorReached > this.account.bestFloor) {
+      this.account.bestFloor = floorReached;
+    }
+    this.saveAccount();
+
     this.scene.setTarget(alt);
     this.scene.setRoofArrived(perfect || alt >= 0.999);
 
@@ -540,7 +692,7 @@ export class Game {
     $('overlay').innerHTML = `
       <div class="card">
         <h1 class="logo" style="font-size:${perfect ? 18 : 22}px">${title}</h1>
-        <p class="tag">Floor ${Math.round(alt * FLOORS)} of ${FLOORS} &middot; ${Math.round((base / ROUNDS) * 100)}% average${bonusSum ? ` &middot; +${Math.round(bonusSum * 100)} speed` : ''}</p>
+        <p class="tag">${this.escapeHtml(this.account.name)} &middot; Floor ${Math.round(alt * FLOORS)} of ${FLOORS} &middot; ${Math.round((base / ROUNDS) * 100)}% average${bonusSum ? ` &middot; +${Math.round(bonusSum * 100)} speed` : ''}</p>
         <div class="res">${rows}</div>
         <button class="big" id="againBtn">PLAY AGAIN (ENTER)</button>
         <button id="viewBtn" style="display:block;margin:10px auto 0">Admire the view</button>
@@ -563,7 +715,9 @@ export class Game {
       return this.toggleFullscreen();
     }
     audio.init();
-    if (this.state === 'title' && e.key === 'Enter') return this.start();
+    if (this.state === 'title' && e.key === 'Enter' && !(document.activeElement && document.activeElement.tagName === 'INPUT')) {
+      return this.start();
+    }
     if (this.state === 'end' && e.key === 'Enter' && $('againBtn')) return this.start();
     if (this.state === 'asking') {
       if (this.q.type === 'mcq' && /^[1-4]$/.test(e.key)) return this.pickOpt(Number(e.key) - 1);

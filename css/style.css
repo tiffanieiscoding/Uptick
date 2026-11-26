@@ -632,3 +632,230 @@ html, body {
   #qText { font-size: 21px; }
   #qcard { padding: 20px; }
 }
+
+/* Left collapsible drawer (Look + Local Account) */
+.drawer {
+  position: fixed;
+  left: 16px;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 25;
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+}
+
+.drawer[hidden] {
+  display: none;
+}
+
+.drawer-tab {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 13px;
+  border-radius: 999px;
+  border: 1px solid var(--border);
+  background: var(--panel);
+  color: var(--ink);
+  font: inherit;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  backdrop-filter: blur(14px);
+  cursor: pointer;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.35);
+  transition: transform 0.15s ease, border-color 0.15s ease, background 0.15s ease;
+}
+
+.drawer-tab:hover {
+  border-color: rgba(255, 255, 255, 0.28);
+  background: rgba(22, 29, 43, 0.94);
+}
+
+.drawer-arrow {
+  display: inline-block;
+  font-size: 14px;
+  line-height: 1;
+  color: var(--muted);
+  transition: transform 0.22s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.drawer.open .drawer-arrow {
+  transform: rotate(90deg);
+  color: var(--ink);
+}
+
+.drawer-panel {
+  width: 256px;
+  padding: 18px 18px 16px;
+  border-radius: 16px;
+  border: 1px solid var(--border);
+  background: var(--panel);
+  backdrop-filter: blur(18px);
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.45);
+}
+
+.drawer-section + .drawer-section {
+  margin-top: 16px;
+  padding-top: 14px;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.drawer-title {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-bottom: 10px;
+}
+
+.drawer .row {
+  margin-top: 10px;
+}
+
+.drawer .lbl {
+  width: 44px;
+  font-size: 10px;
+}
+
+.acc-row {
+  display: flex;
+  gap: 6px;
+}
+
+.acc-input {
+  flex: 1;
+  min-width: 0;
+  padding: 7px 10px;
+  border-radius: 9px;
+  border: 1px solid var(--border);
+  background: rgba(255, 255, 255, 0.04);
+  color: var(--ink);
+  font: inherit;
+  font-size: 12px;
+  outline: none;
+}
+
+.acc-input:focus {
+  border-color: var(--ink);
+}
+
+.acc-save {
+  padding: 7px 11px;
+  border-radius: 9px;
+  border: 0;
+  background: var(--ink);
+  color: var(--bg);
+  font: inherit;
+  font-size: 11px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.acc-stats {
+  margin-top: 10px;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 6px;
+  font-size: 11px;
+  color: var(--muted);
+  font-variant-numeric: tabular-nums;
+}
+
+.acc-stats div {
+  padding: 6px 8px;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.acc-stats strong {
+  display: block;
+  color: var(--ink);
+  font-size: 13px;
+  margin-top: 2px;
+}
+
+/* Plain-style minimal center start card */
+.card.plain-home {
+  max-width: 460px;
+  padding: 34px 32px 30px;
+}
+
+.plain-kicker {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--accent);
+}
+
+.plain-sub {
+  margin-top: 10px;
+  font-size: 14px;
+  color: var(--muted);
+  line-height: 1.5;
+}
+
+.plain-meta {
+  margin-top: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 10px 12px;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.07);
+  font-size: 12px;
+  color: var(--muted);
+}
+
+.plain-meta strong {
+  color: var(--ink);
+  font-weight: 600;
+}
+
+.plain-cta {
+  margin-top: 20px;
+  width: 100%;
+  padding: 15px 20px;
+  border-radius: 14px;
+  border: 0;
+  background: var(--accent);
+  color: #0b0f17;
+  font: inherit;
+  font-size: 15px;
+  font-weight: 800;
+  letter-spacing: 0.02em;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  transition: transform 0.12s ease, filter 0.15s ease;
+}
+
+.plain-cta:hover {
+  filter: brightness(1.05);
+}
+
+.plain-cta:active {
+  transform: scale(0.99);
+}
+
+.plain-cta .cta-sub {
+  font-size: 12px;
+  font-weight: 600;
+  opacity: 0.78;
+}
+
+@media (max-width: 820px) {
+  .drawer {
+    top: auto;
+    bottom: 36px;
+    left: 14px;
+    transform: none;
+    flex-direction: column-reverse;
+  }
+}
